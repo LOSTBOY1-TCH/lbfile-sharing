@@ -181,7 +181,7 @@
     </main>
 
     <script>
-       // DOM Elements
+        // DOM Elements
 const usernameOverlay = document.getElementById("usernameOverlay");
 const usernameInput = document.getElementById("usernameInput");
 const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
@@ -228,12 +228,14 @@ uploadBtn.addEventListener("click", () => {
                 alert(data.message);
                 fetchFiles(); // Refresh file list and leaderboard
             })
-            .catch((error) => console.error("Error uploading file:", error));
+            .catch((error) => {
+                console.error("Error uploading file:", error);
+                alert("Failed to upload. Please try again.");
+            });
     } else {
         alert("No file selected. Please choose a file to upload.");
     }
 });
-
 // Fetch Files from Backend
 function fetchFiles() {
     fetch("/files")
@@ -242,7 +244,10 @@ function fetchFiles() {
             populateFileList(data.files);
             populateLeaderboard(data.files);
         })
-        .catch((error) => console.error("Error fetching files:", error));
+        .catch((error) => {
+            console.error("Error fetching files:", error);
+            alert("Failed to fetch files. Please try again.");
+        });
 }
 
 // Populate File List
@@ -263,7 +268,7 @@ function populateFileList(files) {
 
 // Populate Leaderboard
 function populateLeaderboard(files) {
-    const sortedFiles = files.sort((a, b) => b.downloads - a.downloads);
+    const sortedFiles = [...files].sort((a, b) => b.downloads - a.downloads);
     leaderboard.innerHTML = sortedFiles
         .map(
             (file) => `
@@ -281,6 +286,7 @@ function populateLeaderboard(files) {
 window.onload = () => {
     usernameOverlay.style.display = "flex";
     usernameInput.focus();
-}; 
-</script> </body> 
+};
+    </script>
+</body>
 </html>
