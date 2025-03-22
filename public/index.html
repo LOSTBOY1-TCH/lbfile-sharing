@@ -181,109 +181,106 @@
     </main>
 
     <script>
-        const usernameOverlay = document.getElementById("usernameOverlay");
-        const usernameInput = document.getElementById("usernameInput");
-        const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
-        const usernameDisplay = document.getElementById("usernameDisplay");
-        const fileInput = document.getElementById("fileInput");
-        const uploadBtn = document.getElementById("uploadBtn");
-        const fileList = document.getElementById("fileList");
-        const leaderboard = document.getElementById("leaderboard");
+        // DOM Elements
+const usernameOverlay = document.getElementById("usernameOverlay");
+const usernameInput = document.getElementById("usernameInput");
+const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
+const usernameDisplay = document.getElementById("usernameDisplay");
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileList = document.getElementById("fileList");
+const leaderboard = document.getElementById("leaderboard");
 
-        let currentUser = null; // Tracks the logged-in user
-        let filesData = []; // Stores all uploaded files
+let currentUser = null;
 
-        // Handle Username Submission
-        usernameSubmitBtn.addEventListener("click", () => {
-            const username = usernameInput.value.trim();
-            if (username) {
-                currentUser = username;
-                usernameDisplay.textContent = `Welcome, ${username}!`;
-                usernameOverlay.style.display = "none";
-            } else {
-                alert("Please enter a valid username.");
-            }
-        });
+// Handle Username Submission
+usernameSubmitBtn.addEventListener("click", () => {
+    const username = usernameInput.value.trim();
+    if (username) {
+        currentUser = username;
+        usernameDisplay.textContent = `Welcome, ${username}!`;
+        usernameOverlay.style.display = "none";
+        fetchFiles(); // Fetch files immediately after logging in
+    } else {
+        alert("Please enter a valid username.");
+    }
+});
 
-        // Upload Button Click Event
-        uploadBtn.addEventListener("click", () => {
-            if (!currentUser) {
-                alert("Please provide a username to upload files.");
-                return;
-            }
+// Upload File
+uploadBtn.addEventListener("click", () => {
+    if (!currentUser) {
+        alert("Please provide a username to upload files.");
+        return;
+    }
 
-            const file = fileInput.files[0];
-            if (file) {
-                const fileData = {
-                    name: file.name,
-                    downloads: 0,
-                    link: URL.createObjectURL(file), // Generate a temporary file link
-                    uploader: currentUser
-                };
-                filesData.push(fileData); // Add file data to the list
-                displayFiles(); // Refresh the file list
-                updateLeaderboard(); // Update the leaderboard
-                fileInput.value = ""; // Clear the file input
-                alert(`${currentUser} uploaded file: ${file.name}`);
-            } else {
-                alert("No file selected. Please choose a file to upload.");
-            }
-        });
+    const file = fileInput.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("uploader", currentUser);
 
-// Display Uploaded Files
-function displayFiles() {
-  fileList.innerHTML = filesData.map((file, index) => `
+        fetch("/upload", {
+            method: "POST",
+            body: formData,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                alert(data.message);
+                fetchFiles(); // Refresh file list and leaderboard
+            })
+            .catch((error) => console.error("Error uploading file:", error));
+    } else {
+        alert("No file selected. Please choose a file to upload.");
+    }
+});
+
+// Fetch Files from Backend
+function fetchFiles() {
+    fetch("/files")
+        .then((response) => response.json())
+        .then((data) => {
+            populateFileList(data.files);
+            populateLeaderboard(data.files);
+        })
+        .catch((error) => console.error("Error fetching files:", error));
+}
+
+// Populate File List
+function populateFileList(files) {
+    fileList.innerHTML = files
+        .map(
+            (file) => `
         <div class="file-item">
             <strong>${file.name}</strong>
             <p>Uploaded by: ${file.uploader}</p>
             <p>Downloads: ${file.downloads}</p>
-            <button class="menu-btn" onclick="downloadFile('${file.link}', '${file.name}', ${index})">Download</button>
-            <button class="menu-btn" onclick="copyLink('${file.link}')">Copy Link</button>
+            <a href="${file.link}" target="_blank">Download</a>
         </div>
-    `).join('');
+    `
+        )
+        .join("");
 }
 
-// Function to Download File
-function downloadFile(fileLink, fileName, index) {
-  const downloadAnchor = document.createElement("a");
-  downloadAnchor.href = fileLink;
-  downloadAnchor.download = fileName; // Set file name for download
-document.body.appendChild(downloadAnchor); // Append the anchor element to the body
-downloadAnchor.click(); // Trigger the download action
-document.body.removeChild(downloadAnchor); // Clean up by removing the anchor element
-
-// Increment download count
-filesData[index].downloads += 1;
-displayFiles(); // Refresh the file list to reflect updated download count
-updateLeaderboard(); // Refresh the leaderboard to reflect changes
-alert(`Downloaded: ${fileName}`);
+// Populate Leaderboard
+function populateLeaderboard(files) {
+    const sortedFiles = files.sort((a, b) => b.downloads - a.downloads);
+    leaderboard.innerHTML = sortedFiles
+        .map(
+            (file) => `
+        <div class="leaderboard-item">
+            <strong>${file.name}</strong>
+            <p>Uploader: ${file.uploader}</p>
+            <p>Downloads: ${file.downloads}</p>
+        </div>
+    `
+        )
+        .join("");
 }
 
-// Function to Copy File Link
-function copyLink(link) {
-  navigator.clipboard.writeText(link).then(() => {
-    alert("Link copied to clipboard!"); // Notify the user that the link was copied
-  }).catch(() => {
-    alert("Failed to copy the link. Please try again."); // Handle potential errors
-  });
-}
-
-// Update Leaderboard
-function updateLeaderboard() {
-  const sortedFiles = [...filesData].sort((a, b) => b.downloads - a.downloads); // Sort files by download count
-  leaderboard.innerHTML = sortedFiles.map(file => `
-            <div class="leaderboard-item">
-                <strong>${file.name}</strong>
-                <p>Uploader: ${file.uploader}</p>
-                <p>Downloads: ${file.downloads}</p>
-            </div>
-        `).join(''); // Dynamically populate leaderboard with sorted files
-}
-
-// Ensure the overlay remains visible until the username is submitted
+// Show Username Overlay on Page Load
 window.onload = () => {
-  usernameOverlay.style.display = "flex"; // Make the username overlay visible
-  usernameInput.focus(); // Automatically focus on the username input field for user convenience
+    usernameOverlay.style.display = "flex";
+    usernameInput.focus();
 };
 </script> </body> 
 </html>
