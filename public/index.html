@@ -181,7 +181,7 @@
     </main>
 
     <script>
-        // DOM Elements
+       // DOM Elements
 const usernameOverlay = document.getElementById("usernameOverlay");
 const usernameInput = document.getElementById("usernameInput");
 const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
@@ -191,7 +191,7 @@ const uploadBtn = document.getElementById("uploadBtn");
 const fileList = document.getElementById("fileList");
 const leaderboard = document.getElementById("leaderboard");
 
-let currentUser = null;
+let currentUser = null; // Tracks the logged-in user
 
 // Handle Username Submission
 usernameSubmitBtn.addEventListener("click", () => {
@@ -281,6 +281,6 @@ function populateLeaderboard(files) {
 window.onload = () => {
     usernameOverlay.style.display = "flex";
     usernameInput.focus();
-};
+}; 
 </script> </body> 
 </html>
