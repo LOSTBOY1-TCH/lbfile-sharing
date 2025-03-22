@@ -1,18 +1,19 @@
 {
-  "name": "file-sharing-server",
+  "name": "file-sharing-platform",
   "version": "1.0.0",
-  "description": "Backend for a file-sharing platform with uploads and a leaderboard.",
-  "main": "app.js",
+  "description": "A dynamic file-sharing platform with uploads, leaderboard, and persistent storage using MongoDB.",
+  "main": "server/app.js",
   "scripts": {
-    "start": "node server/app.js",
+    "start": "node server/app.js", 
     "dev": "nodemon server/app.js"
   },
   "keywords": [
     "file-sharing",
     "uploads",
     "downloads",
+    "leaderboard",
     "nodejs",
-    "express"
+    "mongodb"
   ],
   "author": "LOSTBOY",
   "license": "MIT",
@@ -20,6 +21,7 @@
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
     "cors": "^2.8.5",
+    "mongoose": "^7.0.2",
     "path": "^0.12.7"
   },
   "devDependencies": {
