@@ -3,18 +3,26 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const fs = require("fs");
+require("dotenv").config(); // Load environment variables
 
 // Set up Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL || "*" })); // Allow frontend access
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded files
+
+// Ensure the uploads directory exists
+if (!fs.existsSync(path.join(__dirname, "uploads"))) {
+    fs.mkdirSync(path.join(__dirname, "uploads"));
+}
 
 // MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/fileSharing", { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("Failed to connect to MongoDB", err));
 
@@ -54,7 +62,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     const fileData = new File({
         name: file.originalname,
-        link: `https://lbfile-sharing.onrender.com/uploads/${file.filename}`,
+        link: `${process.env.BASE_URL}/uploads/${file.filename}`,
         uploader: uploader || "Anonymous"
     });
 
@@ -83,14 +91,19 @@ app.get("/download/:filename", async (req, res) => {
     const { filename } = req.params;
 
     try {
-        const file = await File.findOne({ link: { $regex: filename } }); // Find file by link
+        const file = await File.findOne({ link: { $regex: `${filename}$` } }); // Match filename
         if (!file) {
             return res.status(404).json({ message: "File not found." });
         }
 
         file.downloads += 1; // Increment download count
         await file.save(); // Save updated download count
-        res.download(path.join(__dirname, "uploads", filename)); // Send file for download
+        res.download(path.join(__dirname, "uploads", filename), (err) => {
+            if (err) {
+                console.error("Error sending file:", err);
+                res.status(500).json({ message: "Failed to send file." });
+            }
+        });
     } catch (error) {
         console.error("Error handling file download:", error);
         res.status(500).json({ message: "Failed to download file." });
