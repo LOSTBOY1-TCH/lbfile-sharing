@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing Platform</title>
+    <link rel="icon" href="assets/icon.png" type="image/png">
+    <style>
+        /* Global Styling */
+        body {
+            background: linear-gradient(to bottom right, #0f0c29, #302b63, #24243e);
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4b0082;
+            padding: 1.5rem;
+            text-align: center;
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.6);
+            text-shadow: 0px 0px 10px #66ffa6, 0px 0px 20px #00e676;
+        }
+
+        main {
+            max-width: 850px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #2b2e4a;
+            border-radius: 15px;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        section {
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: #00e676;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 0px 0px 10px #66ffa6, 0px 0px 20px #00e676;
+        }
+
+        #usernameDisplay {
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #66ffa6;
+        }
+
+        input, button {
+            display: block;
+            margin: 1rem auto;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        input {
+            width: 90%;
+            background-color: #1c1f26;
+            color: #ffffff;
+            box-shadow: 0 0 10px #66ffa6, 0 0 20px #00e676;
+        }
+
+        button {
+            background-color: #00e676;
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px #66ffa6, 0 0 20px #00e676;
+        }
+
+        button:hover {
+            background-color: #66ffa6;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #66ffa6, 0 0 30px #00e676;
+        }
+
+        .file-item, .leaderboard-item {
+            background-color: #1c2833;
+            margin: 0.7rem 0;
+            padding: 1.2rem;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5), 0px 0px 10px #00e676;
+        }
+
+        .file-item strong, .leaderboard-item strong {
+            display: block;
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0px 0px 5px #66ffa6, 0px 0px 10px #00e676;
+        }
+
+        /* Username Prompt Styling */
+        #usernameOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 15, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #usernameOverlayContent {
+            background-color: #2b2e4a;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.6), 0px 0px 20px #66ffa6;
+            text-align: center;
+            width: 400px;
+            animation: glowPulse 2s infinite;
+        }
+
+        #usernameOverlayContent h2 {
+            color: #66ffa6;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0px 0px 10px #66ffa6, 0px 0px 20px #00e676;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow: 0 0 10px #66ffa6, 0 0 20px #00e676;
+            }
+            50% {
+                box-shadow: 0 0 20px #66ffa6, 0 0 30px #00e676;
+            }
+            100% {
+                box-shadow: 0 0 10px #66ffa6, 0 0 20px #00e676;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="usernameOverlay">
+        <div id="usernameOverlayContent">
+            <h2>Welcome to File Sharing Platform</h2>
+            <input type="text" id="usernameInput" placeholder="Enter your username" required>
+            <button id="usernameSubmitBtn">Submit</button>
+        </div>
+    </div>
+    <header>
+        File Sharing Platform
+    </header>
+    <main>
+        <section id="usernameDisplay"></section>
+        <section id="uploadSection">
+            <h2>Upload a File</h2>
+            <input type="file" id="fileInput">
+            <button id="uploadBtn">Upload File</button>
+        </section>
+        <section id="fileListSection">
+            <h2>Uploaded Files</h2>
+            <div id="fileList"></div>
+        </section>
+        <section id="leaderboardSection">
+            <h2>Leaderboard</h2>
+            <div id="leaderboard"></div>
+        </section>
+    </main>
+
+    <script>
+        const usernameOverlay = document.getElementById("usernameOverlay");
+        const usernameInput = document.getElementById("usernameInput");
+        const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
+        const usernameDisplay = document.getElementById("usernameDisplay");
+        const fileInput = document.getElementById("fileInput");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const fileList = document.getElementById("fileList");
+        const leaderboard = document.getElementById("leaderboard");
+
+        let currentUser = null; // Tracks the logged-in user
+        let filesData = []; // Stores all uploaded files
+
+        // Handle Username Submission
+        usernameSubmitBtn.addEventListener("click", () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                currentUser = username;
+                usernameDisplay.textContent = `Welcome, ${username}!`;
+                usernameOverlay.style.display = "none";
+            } else {
+                alert("Please enter a valid username.");
+            }
+        });
+
+        // Upload Button Click Event
+        uploadBtn.addEventListener("click", () => {
+            if (!currentUser) {
+                alert("Please provide a username to upload files.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file) {
+                const fileData = {
+                    name: file.name,
+                    downloads: 0,
+                    link: URL.createObjectURL(file), // Generate a temporary file link
+                    uploader: currentUser
+                };
+                filesData.push(fileData); // Add file data to the list
+                displayFiles(); // Refresh the file list
+                updateLeaderboard(); // Update the leaderboard
+                fileInput.value = ""; // Clear the file input
+                alert(`${currentUser} uploaded file: ${file.name}`);
+            } else {
+                alert("No file selected. Please choose a file to upload.");
+            }
+        });
+
+// Display Uploaded Files
+function displayFiles() {
+  fileList.innerHTML = filesData.map((file, index) => `
+        <div class="file-item">
+            <strong>${file.name}</strong>
+            <p>Uploaded by: ${file.uploader}</p>
+            <p>Downloads: ${file.downloads}</p>
+            <button class="menu-btn" onclick="downloadFile('${file.link}', '${file.name}', ${index})">Download</button>
+            <button class="menu-btn" onclick="copyLink('${file.link}')">Copy Link</button>
+        </div>
+    `).join('');
+}
+
+// Function to Download File
+function downloadFile(fileLink, fileName, index) {
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.href = fileLink;
+  downloadAnchor.download = fileName; // Set file name for download
+document.body.appendChild(downloadAnchor); // Append the anchor element to the body
+downloadAnchor.click(); // Trigger the download action
+document.body.removeChild(downloadAnchor); // Clean up by removing the anchor element
+
+// Increment download count
+filesData[index].downloads += 1;
+displayFiles(); // Refresh the file list to reflect updated download count
+updateLeaderboard(); // Refresh the leaderboard to reflect changes
+alert(`Downloaded: ${fileName}`);
+}
+
+// Function to Copy File Link
+function copyLink(link) {
+  navigator.clipboard.writeText(link).then(() => {
+    alert("Link copied to clipboard!"); // Notify the user that the link was copied
+  }).catch(() => {
+    alert("Failed to copy the link. Please try again."); // Handle potential errors
+  });
+}
+
+// Update Leaderboard
+function updateLeaderboard() {
+  const sortedFiles = [...filesData].sort((a, b) => b.downloads - a.downloads); // Sort files by download count
+  leaderboard.innerHTML = sortedFiles.map(file => `
+            <div class="leaderboard-item">
+                <strong>${file.name}</strong>
+                <p>Uploader: ${file.uploader}</p>
+                <p>Downloads: ${file.downloads}</p>
+            </div>
+        `).join(''); // Dynamically populate leaderboard with sorted files
+}
+
+// Ensure the overlay remains visible until the username is submitted
+window.onload = () => {
+  usernameOverlay.style.display = "flex"; // Make the username overlay visible
+  usernameInput.focus(); // Automatically focus on the username input field for user convenience
+};
+</script> </body> 
+</html>
