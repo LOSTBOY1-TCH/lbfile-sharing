@@ -182,111 +182,112 @@
 
     <script>
         // DOM Elements
-const usernameOverlay = document.getElementById("usernameOverlay");
-const usernameInput = document.getElementById("usernameInput");
-const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
-const usernameDisplay = document.getElementById("usernameDisplay");
-const fileInput = document.getElementById("fileInput");
-const uploadBtn = document.getElementById("uploadBtn");
-const fileList = document.getElementById("fileList");
-const leaderboard = document.getElementById("leaderboard");
+        const usernameOverlay = document.getElementById("usernameOverlay");
+        const usernameInput = document.getElementById("usernameInput");
+        const usernameSubmitBtn = document.getElementById("usernameSubmitBtn");
+        const usernameDisplay = document.getElementById("usernameDisplay");
+        const fileInput = document.getElementById("fileInput");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const fileList = document.getElementById("fileList");
+        const leaderboard = document.getElementById("leaderboard");
 
-let currentUser = null; // Tracks the logged-in user
+        let currentUser  = null; // Tracks the logged-in user
 
-// Handle Username Submission
-usernameSubmitBtn.addEventListener("click", () => {
-    const username = usernameInput.value.trim();
-    if (username) {
-        currentUser = username;
-        usernameDisplay.textContent = `Welcome, ${username}!`;
-        usernameOverlay.style.display = "none";
-        fetchFiles(); // Fetch files immediately after logging in
-    } else {
-        alert("Please enter a valid username.");
-    }
-});
-
-// Upload File
-uploadBtn.addEventListener("click", () => {
-    if (!currentUser) {
-        alert("Please provide a username to upload files.");
-        return;
-    }
-
-    const file = fileInput.files[0];
-    if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("uploader", currentUser);
-
-        fetch("/upload", {
-            method: "POST",
-            body: formData,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                alert(data.message);
-                fetchFiles(); // Refresh file list and leaderboard
-            })
-            .catch((error) => {
-                console.error("Error uploading file:", error);
-                alert("Failed to upload. Please try again.");
-            });
-    } else {
-        alert("No file selected. Please choose a file to upload.");
-    }
-});
-// Fetch Files from Backend
-function fetchFiles() {
-    fetch("/files")
-        .then((response) => response.json())
-        .then((data) => {
-            populateFileList(data.files);
-            populateLeaderboard(data.files);
-        })
-        .catch((error) => {
-            console.error("Error fetching files:", error);
-            alert("Failed to fetch files. Please try again.");
+        // Handle Username Submission
+        usernameSubmitBtn.addEventListener("click", () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                currentUser  = username;
+                usernameDisplay.textContent = `Welcome, ${username}!`;
+                usernameOverlay.style.display = "none";
+                fetchFiles(); // Fetch files immediately after logging in
+            } else {
+                alert("Please enter a valid username.");
+            }
         });
-}
 
-// Populate File List
-function populateFileList(files) {
-    fileList.innerHTML = files
-        .map(
-            (file) => `
-        <div class="file-item">
-            <strong>${file.name}</strong>
-            <p>Uploaded by: ${file.uploader}</p>
-            <p>Downloads: ${file.downloads}</p>
-            <a href="${file.link}" target="_blank">Download</a>
-        </div>
-    `
-        )
-        .join("");
-}
+        // Upload File
+        uploadBtn.addEventListener("click", () => {
+            if (!currentUser ) {
+                alert("Please provide a username to upload files.");
+                return;
+            }
 
-// Populate Leaderboard
-function populateLeaderboard(files) {
-    const sortedFiles = [...files].sort((a, b) => b.downloads - a.downloads);
-    leaderboard.innerHTML = sortedFiles
-        .map(
-            (file) => `
-        <div class="leaderboard-item">
-            <strong>${file.name}</strong>
-            <p>Uploader: ${file.uploader}</p>
-            <p>Downloads: ${file.downloads}</p>
-        </div>
-    `
-        )
-        .join("");
-}
+            const file = fileInput.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("uploader", currentUser );
 
-// Show Username Overlay on Page Load
-window.onload = () => {
-    usernameOverlay.style.display = "flex";
-    usernameInput.focus();
-};
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData,
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        alert(data.message);
+                        fetchFiles(); // Refresh file list and leaderboard
+                    })
+                    .catch((error) => {
+                        console.error("Error uploading file:", error);
+                        alert("Failed to upload. Please try again.");
+                    });
+            } else {
+                alert("No file selected. Please choose a file to upload.");
+            }
+        });
+
+        // Fetch Files from Backend
+        function fetchFiles() {
+            fetch("/files")
+                .then((response) => response.json())
+                .then((data) => {
+                    populateFileList(data.files);
+                    populateLeaderboard(data.files);
+                })
+                .catch((error) => {
+                    console.error("Error fetching files:", error);
+                    alert("Failed to fetch files. Please try again.");
+                });
+        }
+
+        // Populate File List
+        function populateFileList(files) {
+            fileList.innerHTML = files
+                .map(
+                    (file) => `
+            <div class="file-item">
+                <strong>${file.name}</strong>
+                <p>Uploaded by: ${file.uploader}</p>
+                <p>Downloads: ${file.downloads}</p>
+                <a href="${file.link}" target="_blank">Download</a>
+            </div>
+        `
+                )
+                .join("");
+        }
+
+        // Populate Leaderboard
+        function populateLeaderboard(files) {
+            const sortedFiles = [...files].sort((a, b) => b.downloads - a.downloads);
+            leaderboard.innerHTML = sortedFiles
+                .map(
+                    (file) => `
+            <div class="leaderboard-item">
+                <strong>${file.name}</strong>
+                <p>Uploader: ${file.uploader}</p>
+                <p>Downloads: ${file.downloads}</p>
+            </div>
+        `
+                )
+                .join("");
+        }
+
+        // Show Username Overlay on Page Load
+        window.onload = () => {
+            usernameOverlay.style.display = "flex";
+            usernameInput.focus();
+        };
     </script>
 </body>
-</html>
+    </html>
